@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 from torch.nn import Parameter
-import SpectralNorm
+import spectralNorm
 
 # Normal ConvBlock
 class Conv2dLayer(nn.Module):
