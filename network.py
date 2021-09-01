@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.init as init
+from torch.nn.modules.conv import Conv2d
 
 import spectralNorm
 from layers import *
@@ -408,3 +409,99 @@ class GatedGenerator(nn.Module):
         )  # shape: batch_size, 4, H, W
         refine_out = self.refinement(refine_input)
         return coarse_out, refine_out
+
+
+# Discriminator
+# Input: generated image + mask or image + mask
+# output: patch of size 30 * 30
+class PatchDiscriminator(nn.Module):
+    def __init__(self, in_channels, latent_channels, pad_type, activation, norm):
+        super().__init__()
+        # Down-sample the input
+        self.block1 = (
+            Conv2d(
+                in_channels,
+                latent_channels,
+                7,
+                1,
+                3,
+                pad_type=pad_type,
+                activation=activation,
+                norm="none",
+                sn=True,
+            ),
+        )
+        self.block2 = (
+            Conv2d(
+                latent_channels,
+                latent_channels * 2,
+                4,
+                2,
+                1,
+                pad_type=pad_type,
+                activation=activation,
+                norm=norm,
+                sn=True,
+            ),
+        )
+        self.block3 = (
+            Conv2d(
+                latent_channels * 2,
+                latent_channels * 4,
+                4,
+                2,
+                1,
+                pad_type=pad_type,
+                activation=activation,
+                norm=norm,
+                sn=True,
+            ),
+        )
+        self.block4 = (
+            Conv2d(
+                latent_channels * 4,
+                latent_channels * 4,
+                4,
+                2,
+                1,
+                pad_type=pad_type,
+                activation=activation,
+                norm=norm,
+                sn=True,
+            ),
+        )
+        self.block5 = (
+            Conv2d(
+                latent_channels * 4,
+                latent_channels * 4,
+                4,
+                2,
+                1,
+                pad_type=pad_type,
+                activation=activation,
+                norm=norm,
+                sn=True,
+            ),
+        )
+        self.block6 = Conv2d(
+            latent_channels * 4,
+            1,
+            4,
+            2,
+            1,
+            pad_type=pad_type,
+            activation="none",
+            norm="none",
+            sn=True,
+        )
+
+    def forward(self, img, mask):
+        # concat the image and the mask
+        x = torch.cat((img, mask), 1)
+        x = self.block1(x)
+        x = self.block2(x)
+        x = self.block3(x)
+        x = self.block4(x)
+        x = self.block5(x)
+        x = self.block6(x)
+        return x
