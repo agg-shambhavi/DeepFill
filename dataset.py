@@ -70,11 +70,20 @@ if __name__ == "__main__":
         "image", cv2.cvtColor(img[0].permute(1, 2, 0).numpy(), cv2.COLOR_BGR2RGB)
     )
     cv2.imshow("MASK tensor", mask[0].numpy())
-    input_image = img - mask
-    print(input_image.shape)
+    unmask_mask = 1 - mask
     cv2.imshow(
-        "input image",
-        cv2.cvtColor(input_image[0].permute(1, 2, 0).numpy(), cv2.COLOR_BGR2RGB),
+        "invert mask",
+        unmask_mask[0].numpy(),
+    )
+    term1 = img * unmask_mask
+    cv2.imshow(
+        "term 1",
+        cv2.cvtColor(term1[0].permute(1, 2, 0).numpy(), cv2.COLOR_BGR2RGB),
+    )
+    whole_term = term1 + mask
+    cv2.imshow(
+        "whole term",
+        cv2.cvtColor(whole_term[0].permute(1, 2, 0).numpy(), cv2.COLOR_BGR2RGB),
     )
     cv2.waitKey()
     cv2.destroyAllWindows()
