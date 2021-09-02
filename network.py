@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.init as init
-from torch.nn.modules.conv import Conv2d
 
 import spectralNorm
 from layers import *
@@ -419,7 +418,7 @@ class PatchDiscriminator(nn.Module):
         super().__init__()
         # Down-sample the input
         self.block1 = (
-            Conv2d(
+            Conv2dLayer(
                 in_channels,
                 latent_channels,
                 7,
@@ -432,7 +431,7 @@ class PatchDiscriminator(nn.Module):
             ),
         )
         self.block2 = (
-            Conv2d(
+            Conv2dLayer(
                 latent_channels,
                 latent_channels * 2,
                 4,
@@ -445,7 +444,7 @@ class PatchDiscriminator(nn.Module):
             ),
         )
         self.block3 = (
-            Conv2d(
+            Conv2dLayer(
                 latent_channels * 2,
                 latent_channels * 4,
                 4,
@@ -458,7 +457,7 @@ class PatchDiscriminator(nn.Module):
             ),
         )
         self.block4 = (
-            Conv2d(
+            Conv2dLayer(
                 latent_channels * 4,
                 latent_channels * 4,
                 4,
@@ -471,7 +470,7 @@ class PatchDiscriminator(nn.Module):
             ),
         )
         self.block5 = (
-            Conv2d(
+            Conv2dLayer(
                 latent_channels * 4,
                 latent_channels * 4,
                 4,
@@ -483,7 +482,7 @@ class PatchDiscriminator(nn.Module):
                 sn=True,
             ),
         )
-        self.block6 = Conv2d(
+        self.block6 = Conv2dLayer(
             latent_channels * 4,
             1,
             4,
@@ -505,7 +504,8 @@ class PatchDiscriminator(nn.Module):
         x = self.block5(x)
         x = self.block6(x)
         return x
-    
+
+
 # Perceptual Network
 # VGG-16 conv4_3 features
 class PerceptualNet(nn.Module):
@@ -513,26 +513,26 @@ class PerceptualNet(nn.Module):
         super(PerceptualNet, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, 3, 1, 1),
-            nn.ReLU(inplace = True),
+            nn.ReLU(inplace=True),
             nn.Conv2d(64, 64, 3, 1, 1),
-            nn.ReLU(inplace = True),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2),
             nn.Conv2d(64, 128, 3, 1, 1),
-            nn.ReLU(inplace = True),
+            nn.ReLU(inplace=True),
             nn.Conv2d(128, 128, 3, 1, 1),
-            nn.ReLU(inplace = True),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2),
             nn.Conv2d(128, 256, 3, 1, 1),
-            nn.ReLU(inplace = True),
+            nn.ReLU(inplace=True),
             nn.Conv2d(256, 256, 3, 1, 1),
-            nn.ReLU(inplace = True),
+            nn.ReLU(inplace=True),
             nn.Conv2d(256, 256, 3, 1, 1),
             nn.MaxPool2d(2, 2),
             nn.Conv2d(256, 512, 3, 1, 1),
-            nn.ReLU(inplace = True),
+            nn.ReLU(inplace=True),
             nn.Conv2d(512, 512, 3, 1, 1),
-            nn.ReLU(inplace = True),
-            nn.Conv2d(512, 512, 3, 1, 1)
+            nn.ReLU(inplace=True),
+            nn.Conv2d(512, 512, 3, 1, 1),
         )
 
     def forward(self, x):
